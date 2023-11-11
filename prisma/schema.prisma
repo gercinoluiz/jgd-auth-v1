@@ -17,24 +17,34 @@ enum UserProvider {
 
 // User model
 model User {
-  id         String        @id @default(uuid())
-  name       String        @unique
-  email      String        @unique
-  password   String
-  firstName  String?
-  lastName   String?
-  role       UserRole      @default(USER)
-  status     UserStatus    @default(ACTIVE)
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime?     @updatedAt
-  mobile     String?
-  street     String?
-  city       String?
-  state      String?
-  postalCode String?
-  country    String?
-  photo      String?
-  provider   UserProvider?
+  id             String          @id @default(uuid())
+  name           String          @unique
+  email          String          @unique
+  password       String?
+  number         String?
+  firstName      String?
+  lastName       String?
+  role           UserRole?       @default(USER)
+  status         UserStatus?     @default(ACTIVE)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime?       @updatedAt
+  mobile         String?
+  street         String?
+  city           String?
+  state          String?
+  postalCode     String?
+  country        String?
+  photo          String?
+  provider       UserProvider?
+  user_role_id   String?
+  user_status_id String?
+  Transaction    Transaction[]
+  Invoice        Invoice[]
+  PaymentMethod  PaymentMethod[]
+  Subscription   Subscription[]
+  Reward         Reward[]
+  UserPromoCode  UserPromoCode[]
+  CodeUsage      CodeUsage[]
 
   @@map("users")
 }
@@ -43,7 +53,6 @@ model User {
 enum UserRole {
   ADMIN
   USER
-  GUEST
 }
 
 // user status
@@ -53,4 +62,164 @@ enum UserStatus {
   SUSPENDED
 }
 
-// Question model
+// Transaction model
+model Transaction {
+  id             String        @id @default(uuid())
+  userId         String
+  amount         Float?
+  currency       String?
+  status         String?
+  createdAt      DateTime      @default(now())
+  user           User          @relation(fields: [userId], references: [id])
+  Invoice        Invoice[]
+  Subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String?
+
+  @@map("transactions")
+}
+
+// Invoice model
+model Invoice {
+  id            String       @id @default(uuid())
+  userId        String
+  amount        Float?
+  dueDate       DateTime?
+  status        String?
+  transactionId String?
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  user          User         @relation(fields: [userId], references: [id])
+
+  @@map("invoices")
+}
+
+// PaymentMethod model
+model PaymentMethod {
+  id            String    @id @default(uuid())
+  userId        String
+  type          String?
+  provider      String?
+  accountNumber String?
+  expiry        DateTime?
+  user          User      @relation(fields: [userId], references: [id])
+
+  @@map("payment_methods")
+}
+
+// Subscription model
+model Subscription {
+  id           String             @id @default(uuid())
+  userId       String
+  plan         String
+  cost         Float
+  currency     String
+  startDate    DateTime
+  endDate      DateTime
+  renewalDate  DateTime?
+  status       SubscriptionStatus
+  type         SubscriptionType   @default(REGULAR) // Identifies the type of subscription
+  giftedBy     String? // If this is a gift, who is it from
+  promotional  Boolean            @default(false) // Is this a promotional offer?
+  transactions Transaction[]
+  user         User               @relation(fields: [userId], references: [id])
+  CodeUsage    CodeUsage[]
+
+  @@map("subscriptions")
+}
+
+// Subscription type enum
+enum SubscriptionType {
+  REGULAR
+  GIFT
+  PROMOTIONAL
+  MARKETING
+  TESTING
+  // Add other types as needed
+}
+
+// Subscription status enum
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  // Add other statuses as needed
+}
+
+// CompanyPromoCode model for company-issued promo codes
+model CompanyPromoCode {
+  id             String        @id @default(uuid())
+  code           String        @unique
+  description    String?
+  type           PromoCodeType
+  expirationDate DateTime?
+  maxUses        Int           @default(10)
+  timesUsed      Int           @default(0)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  CodeUsage      CodeUsage[]
+
+  @@map("company_promo_codes")
+}
+
+// UserPromoCode model for user-associated promo codes
+model UserPromoCode {
+  id             String        @id @default(uuid())
+  code           String        @unique
+  userId         String // The ID of the user who can share this promo code
+  description    String?
+  type           PromoCodeType
+  expirationDate DateTime?
+  maxUses        Int           @default(10) // Number of times this code can be used by others
+  timesUsed      Int           @default(0) // Number of times this code has been used
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id])
+  codeUsages CodeUsage[]
+
+  @@map("user_promo_codes")
+}
+
+// CodeUsage model to track the use of both company and user promo codes
+model CodeUsage {
+  id             String   @id @default(uuid())
+  promoCodeId    String? // ID of the used promo code, null if company code was used
+  companyCodeId  String? // ID of the used company promo code, null if user code was used
+  userId         String // The ID of the user who used the promo code
+  subscriptionId String? // The ID of the subscription tied to this usage
+  usedAt         DateTime @default(now())
+
+  userPromoCode    UserPromoCode?    @relation(fields: [promoCodeId], references: [id])
+  companyPromoCode CompanyPromoCode? @relation(fields: [companyCodeId], references: [id])
+  user             User              @relation(fields: [userId], references: [id])
+  subscription     Subscription?     @relation(fields: [subscriptionId], references: [id])
+
+  @@map("code_usages")
+}
+
+enum PromoCodeType {
+  DISCOUNT
+  FREE_TRIAL
+  SPECIAL_OFFER
+  // etc.
+}
+
+// Reward model
+model Reward {
+  id          String     @id @default(uuid())
+  userId      String
+  rewardType  RewardType
+  description String?
+  issuedDate  DateTime   @default(now())
+  validUntil  DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("rewards")
+}
+
+// RewardType enum
+enum RewardType {
+  FREE_SUBSCRIPTION
+  DISCOUNT
+  // Add other reward types as needed
+}

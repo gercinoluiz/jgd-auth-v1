@@ -3,8 +3,6 @@ import { OAuth2Client } from 'google-auth-library'
 export const checkAuthProvider = {
   google: async (token: string) => {
     try {
-      console.log(token)
-
       const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
       const ticket = await client.verifyIdToken({
         idToken: token,

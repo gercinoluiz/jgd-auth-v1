@@ -14,12 +14,20 @@ export class PrismaUserRepository implements IUserRepository {
   async create(user: CreateUserDTO): Promise<Partial<IUser>> {
     const createdUser = await this.prisma.user.create({
       data: {
-        name: user.name,
+        name: user.name || '',
         email: user.email,
         password: user.password,
         firstName: user.firstName || undefined,
         lastName: user.lastName || undefined,
         role: user.role,
+        provider: user?.provider,
+        photo: user.photo,
+        mobile: user.mobile,
+        street: user.street,
+        city: user.city,
+        state: user.state,
+        postalCode: user.postalCode,
+        country: user.country,
       },
     })
     return createdUser as IUser
@@ -41,6 +49,7 @@ export class PrismaUserRepository implements IUserRepository {
       where: { id },
       data: updates,
     })
+
     return updatedUser as IUser
   }
 

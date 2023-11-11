@@ -42,7 +42,20 @@ export class CreateUserService {
       throw new ConflictException('User already exists')
     }
 
-    const hashedPassword = await hash(password, 8)
+    let hashedPassword: string = ''
+
+    if (!token && password) {
+      hashedPassword = await hash(password, 8)
+    }
+
+    if (!password && token) {
+      hashedPassword = await hash(token, 8)
+    }
+
+
+    if (!password && !token) {
+      throw new ConflictException('Password is required')
+    }
 
     // TODO: verify to chanche this to a injectable service
 
@@ -75,7 +88,12 @@ export class CreateUserService {
       throw new InternalServerErrorException('Error')
     }
 
-    const newUser = pickFields(userReturn, ['name', 'city', 'email'])
+    const newUser = pickFields(userReturn, [
+      'name',
+      'city',
+      'email',
+      'provider',
+    ])
 
     return newUser
   }

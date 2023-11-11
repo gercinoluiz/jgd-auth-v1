@@ -1,6 +1,8 @@
 export type TAuthLogin = {
   email: string
-  password: string
+  password?: string
+  token_provider?: string
+  provider?: string
 }
 
 // UserRepository.ts

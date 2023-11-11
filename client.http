@@ -6,8 +6,8 @@ POST {{baseUrl}}/accounts
 Content-Type: application/json
 
 {
-  "name": "Diego",
-  "email": "diego@rocketseat.com.br",
+  "name": "David Luig",
+  "email": "DavidL@rocketseat.com.br",
   "password": "123456"
 }
 
@@ -18,20 +18,20 @@ POST {{baseUrl}}/sessions
 Content-Type: application/json
 
 {
-  "email": "diego@rocketseat.com.br",
+  "email": "DavidL@rocketseat.com.br",
   "password": "123456"
 }
 
 ###
 
-# @name create_question
-POST {{baseUrl}}/questions
+# @name update_user
+PUT {{baseUrl}}/accounts
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
-  "title": "Nova pergunta 2",
-  "content": "Teste"
+"email":"DavidL@rocketseat.com.br",
+     "name":"Caio Cezar"
 }
 
 ###

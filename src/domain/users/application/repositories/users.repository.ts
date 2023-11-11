@@ -2,7 +2,6 @@
 export enum UserRole {
   ADMIN = 'ADMIN',
   USER = 'USER',
-  GUEST = 'GUEST',
 }
 
 export enum UserStatus {
@@ -40,13 +39,14 @@ export interface IUser {
   country?: string
   photo?: string
   provider?: UserProvider
+  number?: string
 }
 
 // UserDTOs.ts
 export interface CreateUserDTO {
-  name: string
+  name?: string
   email: string
-  password: string
+  password?: string
   firstName?: string
   lastName?: string
   role?: UserRole
@@ -59,12 +59,12 @@ export interface CreateUserDTO {
   postalCode?: string
   country?: string
 
-  provider?: string
+  provider?: UserProvider | any
   photo?: string
 }
 
 export interface UpdateUserDTO {
-  username?: string
+  name?: string
   email?: string
   password?: string
   firstName?: string
@@ -79,6 +79,8 @@ export interface UpdateUserDTO {
   state?: string
   postalCode?: string
   country?: string
+  number?: string
+  photo?: string
 }
 
 // UserRepository.ts
